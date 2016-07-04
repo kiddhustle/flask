@@ -1,0 +1,1 @@
+A new user by the name of {{user.username}} has registered.
