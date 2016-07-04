@@ -33,7 +33,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] =\
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['MAIL_SERVER'] = config['email']['MAIL_SERVER']
 app.config['MAIL_PORT'] = config['email']['MAIL_PORT']
-app.config['MAIL_USE_TLS'] = config.getboolean('email','MAIL_USE_TLS'),
+app.config['MAIL_USE_TLS'] = config.getboolean('email','MAIL_USE_TLS')
+app.config['MAIL_USERNAME'] = config['email']['MAIL_USERNAME']
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 
 app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
