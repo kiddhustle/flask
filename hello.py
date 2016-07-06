@@ -8,6 +8,7 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_mail import Mail, Message
 
 from datetime import datetime
+from threading import Thread
 
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
@@ -35,11 +36,11 @@ app.config['MAIL_SERVER'] = config['email']['MAIL_SERVER']
 app.config['MAIL_PORT'] = config['email']['MAIL_PORT']
 app.config['MAIL_USE_TLS'] = config.getboolean('email','MAIL_USE_TLS')
 app.config['MAIL_USERNAME'] = config['email']['MAIL_USERNAME']
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_PASSWORD'] = config['email']['MAIL_PASSWORD']
 
 app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
 app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <flasky@example.com>'
-app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
+app.config['FLASKY_ADMIN'] = config['email']['FLASKY_ADMIN']
 
 bootstrap = Bootstrap(app)
 moment = Moment(app)
@@ -71,6 +72,10 @@ class User(db.Model):
 
 # email
 #
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+        print('email sent')
 def send_email(to, subject, template, **kwargs):
     msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
         sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to]
@@ -78,13 +83,9 @@ def send_email(to, subject, template, **kwargs):
 
     msg.body = render_template(template + '.txt', **kwargs)
     msg.html = render_template(template + '.html', **kwargs)
-    print(msg.body)
-    print(msg.html)
-    # print(app.config)
-    print(app.config['MAIL_SERVER'])
-    mail.send(msg)
-
-    print('email sent')
+    thr = Thread(target=send_async_email, args=[app,msg])
+    thr.start()
+    return thr
 @app.route('/', methods=['GET','POST'])
 def index():
     user_agent= request.headers.get('User-Agent')
