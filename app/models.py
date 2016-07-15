@@ -4,6 +4,7 @@ from flask.ext.login import UserMixin, AnonymousUserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from . import login_manager, db
+from datetime import datetime
 # Models
 class Permission:
     FOLLOW = 0x01
@@ -58,6 +59,14 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
     @property
     def password(self):
         raise AttributeError('password is to  a readable attribute')
